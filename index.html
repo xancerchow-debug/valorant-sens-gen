@@ -527,7 +527,9 @@
   <div class="step-tab active" id="tab-0">01 · 个人习惯</div>
   <div class="step-tab" id="tab-1">02 · 悬停测试</div>
   <div class="step-tab" id="tab-2">03 · 追踪测试</div>
-  <div class="step-tab" id="tab-3">04 · 灵敏度结果</div>
+  <div class="step-tab" id="tab-3">04 · 甩枪测试</div>
+  <div class="step-tab" id="tab-4">05 · 微调测试</div>
+  <div class="step-tab" id="tab-5">06 · 灵敏度结果</div>
 </div>
 
 <div class="main">
@@ -570,26 +572,17 @@
         <button class="q-btn" data-val="palm">掌握 Palm</button>
         <button class="q-btn" data-val="claw">爪握 Claw</button>
         <button class="q-btn" data-val="fingertip">指尖 Fingertip</button>
+        <button class="q-btn" data-val="hybrid_pc">掌爪混合</button>
+        <button class="q-btn" data-val="hybrid_cf">爪指混合</button>
       </div>
     </div>
 
     <div class="q-group">
-      <div class="q-label">游戏经验</div>
-      <div class="q-options" id="q-exp">
-        <button class="q-btn" data-val="new">新手 &lt;100h</button>
-        <button class="q-btn" data-val="casual">休闲 100-500h</button>
-        <button class="q-btn" data-val="regular">熟练 500-1500h</button>
-        <button class="q-btn" data-val="veteran">老手 &gt;1500h</button>
-      </div>
-    </div>
-
-    <div class="q-group">
-      <div class="q-label">偏好的感觉</div>
-      <div class="q-options" id="q-pref">
-        <button class="q-btn" data-val="low">低灵敏 · 稳定精确</button>
-        <button class="q-btn" data-val="mid">中灵敏 · 均衡</button>
-        <button class="q-btn" data-val="high">高灵敏 · 灵活</button>
-        <button class="q-btn" data-val="auto">根据测试自动决定</button>
+      <div class="q-label">手掌大小（虎口到中指尖）</div>
+      <div class="q-options" id="q-handsize">
+        <button class="q-btn" data-val="small">偏小 &lt;17cm</button>
+        <button class="q-btn" data-val="medium">中等 17-19cm</button>
+        <button class="q-btn" data-val="large">偏大 &gt;19cm</button>
       </div>
     </div>
 
@@ -601,6 +594,11 @@
         <button class="q-btn" data-val="duelist">双持 / 手枪流</button>
         <button class="q-btn" data-val="mixed">均衡</button>
       </div>
+    </div>
+
+    <div class="info-box" style="margin-top:4px;">
+      经验值和"偏好感觉"两项已移除——它们对最终数值的影响很小，容易造成"为了填而填"的假精确感。<br>
+      灵敏度的核心判断依据来自后面四项实测数据，不是主观描述。
     </div>
 
     <button class="btn-primary" onclick="goToTest1()">开始测试 →</button>
@@ -669,11 +667,77 @@
     </div>
 
     <button class="btn-secondary" onclick="goPage(1)">← 返回</button>
-    <button class="btn-primary" id="btn-next2" onclick="calcAndShowResult()" style="display:none">生成灵敏度 →</button>
+    <button class="btn-primary" id="btn-next2" onclick="goPage(3)" style="display:none">下一项测试 →</button>
   </div>
 
-  <!-- PAGE 3: 结果 -->
+  <!-- PAGE 3: 甩枪测试 -->
   <div class="page" id="page-3">
+    <div class="page-title">甩枪 <span>Flick</span> 测试</div>
+    <div class="page-sub">目标随机瞬时出现在场地各处 · 测试大幅度转向的甩枪精度</div>
+    <div class="test-instruction">
+      目标会在场地内随机位置瞬间出现（包括边缘和对角），需要大幅度甩动鼠标去命中。<br>
+      这项测试<strong style="color:var(--text)">直接决定灵敏度上限</strong>：甩枪容易脱靶说明当前灵敏度偏高，甩不到位说明偏低。
+    </div>
+
+    <div class="test-arena" id="arena3">
+      <div class="arena-grid"></div>
+      <div class="arena-hud">
+        <div class="hud-stat">HITS<span class="val green" id="flick-hits">0</span></div>
+        <div class="hud-stat" style="text-align:center">TIME<span class="val red" id="timer3-display">15</span></div>
+        <div class="hud-stat" style="text-align:right">首次修正距离<span class="val" id="flick-overshoot">—</span></div>
+      </div>
+      <div class="timer-bar"><div class="timer-bar-fill" id="timer3-bar" style="width:100%"></div></div>
+
+      <div class="ready-screen" id="ready3">
+        <h2>甩枪测试</h2>
+        <p>目标会突然在随机位置出现，尽快甩动鼠标覆盖它。<br>15秒内完成尽量多次甩枪。</p>
+        <button class="ready-btn" onclick="startTest3()">开始测试</button>
+      </div>
+      <div class="test-done-overlay" id="done3">
+        <h3>✓ 甩枪测试完成</h3>
+        <p id="done3-text"></p>
+      </div>
+    </div>
+
+    <button class="btn-secondary" onclick="goPage(2)">← 返回</button>
+    <button class="btn-primary" id="btn-next3" onclick="goPage(4)" style="display:none">下一项测试 →</button>
+  </div>
+
+  <!-- PAGE 4: 微调测试 -->
+  <div class="page" id="page-4">
+    <div class="page-title">微调 <span>精度</span> 测试</div>
+    <div class="page-sub">小幅度目标密集出现 · 测试近距离精确校准能力</div>
+    <div class="test-instruction">
+      目标会在准星附近很小的范围内出现，需要做<strong style="color:var(--text)">小幅度精细调整</strong>而不是大幅移动。<br>
+      这项测试反映灵敏度下限：如果连小范围目标都要移动很远才能碰到，说明灵敏度可能偏低导致微操困难。
+    </div>
+
+    <div class="test-arena" id="arena4">
+      <div class="arena-grid"></div>
+      <div class="arena-hud">
+        <div class="hud-stat">HITS<span class="val green" id="micro-hits">0</span></div>
+        <div class="hud-stat" style="text-align:center">TIME<span class="val red" id="timer4-display">15</span></div>
+        <div class="hud-stat" style="text-align:right">平均耗时<span class="val" id="micro-avg">—</span></div>
+      </div>
+      <div class="timer-bar"><div class="timer-bar-fill" id="timer4-bar" style="width:100%"></div></div>
+
+      <div class="ready-screen" id="ready4">
+        <h2>微调测试</h2>
+        <p>目标会在准星附近小范围内出现，做小幅度精确移动去命中。<br>15秒内尽量命中更多。</p>
+        <button class="ready-btn" onclick="startTest4()">开始测试</button>
+      </div>
+      <div class="test-done-overlay" id="done4">
+        <h3>✓ 微调测试完成</h3>
+        <p id="done4-text"></p>
+      </div>
+    </div>
+
+    <button class="btn-secondary" onclick="goPage(3)">← 返回</button>
+    <button class="btn-primary" id="btn-next4" onclick="calcAndShowResult()" style="display:none">生成灵敏度 →</button>
+  </div>
+
+  <!-- PAGE 5: 结果 -->
+  <div class="page" id="page-5">
     <div class="page-title">你的 <span>专属</span> 灵敏度</div>
     <div class="page-sub">基于测试结果 + 个人习惯综合计算</div>
 
@@ -734,7 +798,7 @@
 <script>
 // ========== 全局状态 ==========
 let mouseX = 0, mouseY = 0;
-let surveyData = { dpi: null, pad: null, grip: null, exp: null, pref: null, weapon: null };
+let surveyData = { dpi: null, pad: null, grip: null, handsize: null, weapon: null };
 
 // 准星跟随
 document.addEventListener('mousemove', (e) => {
@@ -769,7 +833,7 @@ function goPage(n) {
 }
 
 function goToTest1() {
-  if (!surveyData.dpi || !surveyData.pad || !surveyData.grip || !surveyData.exp || !surveyData.pref || !surveyData.weapon) {
+  if (!surveyData.dpi || !surveyData.pad || !surveyData.grip || !surveyData.handsize || !surveyData.weapon) {
     alert('请完成所有选项后继续');
     return;
   }
@@ -955,80 +1019,285 @@ function endTest2() {
   window.test2Result = { trackPct: pct };
 }
 
+// ========== 测试3：甩枪 Flick ==========
+let test3Running = false;
+let flickHits = 0;
+let flickOvershoots = [];
+let timer3Interval = null;
+let timer3Remaining = 15;
+let flickTarget = null;
+let flickAppearTime = 0;
+let flickFirstMoveDist = 0;
+let flickLastMouse = null;
+
+function startTest3() {
+  document.getElementById('ready3').style.display = 'none';
+  test3Running = true;
+  flickHits = 0;
+  flickOvershoots = [];
+  timer3Remaining = 15;
+  document.getElementById('flick-hits').textContent = '0';
+  document.getElementById('flick-overshoot').textContent = '—';
+
+  spawnFlickTarget();
+
+  const startMs = Date.now();
+  timer3Interval = setInterval(() => {
+    const elapsed = (Date.now() - startMs) / 1000;
+    timer3Remaining = Math.max(0, 15 - elapsed);
+    document.getElementById('timer3-display').textContent = Math.ceil(timer3Remaining);
+    document.getElementById('timer3-bar').style.width = (timer3Remaining / 15 * 100) + '%';
+    if (timer3Remaining <= 0) {
+      clearInterval(timer3Interval);
+      endTest3();
+    }
+  }, 50);
+}
+
+function spawnFlickTarget() {
+  if (!test3Running) return;
+  const arena = document.getElementById('arena3');
+  const old = arena.querySelector('.target');
+  if (old) old.remove();
+
+  const size = 30;
+  const pad = 40;
+  // 随机分布在整个场地，包括边缘，制造大幅度移动需求
+  const x = pad + Math.random() * (arena.clientWidth - pad * 2);
+  const y = pad + Math.random() * (arena.clientHeight - pad * 2);
+
+  const t = document.createElement('div');
+  t.className = 'target active';
+  t.style.cssText = `left:${x}px;top:${y}px;width:${size}px;height:${size}px`;
+  arena.appendChild(t);
+  flickTarget = { el: t, x, y, size, triggered: false };
+  flickAppearTime = Date.now();
+
+  // 记录目标出现瞬间鼠标位置，用于计算移动距离
+  const rect = arena.getBoundingClientRect();
+  flickLastMouse = { x: mouseX - rect.left, y: mouseY - rect.top };
+}
+
+document.addEventListener('mousemove', checkHoverFlick);
+function checkHoverFlick() {
+  if (!test3Running || !flickTarget || flickTarget.triggered) return;
+  const arena = document.getElementById('arena3');
+  const rect = arena.getBoundingClientRect();
+  const ax = mouseX - rect.left;
+  const ay = mouseY - rect.top;
+  const dx = ax - flickTarget.x;
+  const dy = ay - flickTarget.y;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  if (dist < flickTarget.size / 2 + 4) {
+    flickTarget.triggered = true;
+    const reaction = Date.now() - flickAppearTime;
+    // 移动距离 = 目标出现时鼠标位置 到 命中位置 的直线距离，越接近直线甩枪路径越准
+    const travelDist = Math.sqrt(
+      Math.pow(ax - flickLastMouse.x, 2) + Math.pow(ay - flickLastMouse.y, 2)
+    );
+    const idealDist = Math.sqrt(
+      Math.pow(flickTarget.x - flickLastMouse.x, 2) + Math.pow(flickTarget.y - flickLastMouse.y, 2)
+    );
+    const overshoot = idealDist > 5 ? Math.max(0, (travelDist - idealDist) / idealDist) : 0;
+    flickOvershoots.push(overshoot);
+    flickHits++;
+    document.getElementById('flick-hits').textContent = flickHits;
+    const avgOver = Math.round(flickOvershoots.reduce((a,b)=>a+b,0) / flickOvershoots.length * 100);
+    document.getElementById('flick-overshoot').textContent = avgOver + '%';
+    flickTarget.el.classList.remove('active');
+    flickTarget.el.classList.add('hit');
+    setTimeout(() => { if (test3Running) spawnFlickTarget(); }, 250);
+  }
+}
+
+function endTest3() {
+  test3Running = false;
+  const arena = document.getElementById('arena3');
+  const old = arena.querySelector('.target');
+  if (old) old.remove();
+  const avgOver = flickOvershoots.length > 0 ? Math.round(flickOvershoots.reduce((a,b)=>a+b,0) / flickOvershoots.length * 100) : 50;
+  const done = document.getElementById('done3');
+  done.style.display = 'flex';
+  document.getElementById('done3-text').textContent = `命中 ${flickHits} 次 · 路径冗余 ${avgOver}%`;
+  document.getElementById('btn-next3').style.display = 'inline-block';
+  window.test3Result = { hits: flickHits, overshoot: avgOver };
+}
+
+// ========== 测试4：微调 Micro-correction ==========
+let test4Running = false;
+let microHits = 0;
+let microTimes = [];
+let timer4Interval = null;
+let timer4Remaining = 15;
+let microTarget = null;
+let microAppearTime = 0;
+
+function startTest4() {
+  document.getElementById('ready4').style.display = 'none';
+  test4Running = true;
+  microHits = 0;
+  microTimes = [];
+  timer4Remaining = 15;
+  document.getElementById('micro-hits').textContent = '0';
+  document.getElementById('micro-avg').textContent = '—';
+
+  spawnMicroTarget();
+
+  const startMs = Date.now();
+  timer4Interval = setInterval(() => {
+    const elapsed = (Date.now() - startMs) / 1000;
+    timer4Remaining = Math.max(0, 15 - elapsed);
+    document.getElementById('timer4-display').textContent = Math.ceil(timer4Remaining);
+    document.getElementById('timer4-bar').style.width = (timer4Remaining / 15 * 100) + '%';
+    if (timer4Remaining <= 0) {
+      clearInterval(timer4Interval);
+      endTest4();
+    }
+  }, 50);
+}
+
+function spawnMicroTarget() {
+  if (!test4Running) return;
+  const arena = document.getElementById('arena4');
+  const old = arena.querySelector('.target');
+  if (old) old.remove();
+
+  const rect = arena.getBoundingClientRect();
+  // 基准点：如果是第一个目标，用场地中心；否则用上一个目标位置
+  const baseX = microTarget ? microTarget.x : arena.clientWidth / 2;
+  const baseY = microTarget ? microTarget.y : arena.clientHeight / 2;
+
+  const size = 22;
+  const range = 50; // 小范围偏移，模拟近距离微调
+  const pad = 40;
+  let x = baseX + (Math.random() - 0.5) * range * 2;
+  let y = baseY + (Math.random() - 0.5) * range * 2;
+  x = Math.max(pad, Math.min(arena.clientWidth - pad, x));
+  y = Math.max(pad, Math.min(arena.clientHeight - pad, y));
+
+  const t = document.createElement('div');
+  t.className = 'target active';
+  t.style.cssText = `left:${x}px;top:${y}px;width:${size}px;height:${size}px`;
+  arena.appendChild(t);
+  microTarget = { el: t, x, y, size, triggered: false };
+  microAppearTime = Date.now();
+}
+
+document.addEventListener('mousemove', checkHoverMicro);
+function checkHoverMicro() {
+  if (!test4Running || !microTarget || microTarget.triggered) return;
+  const arena = document.getElementById('arena4');
+  const rect = arena.getBoundingClientRect();
+  const ax = mouseX - rect.left;
+  const ay = mouseY - rect.top;
+  const dx = ax - microTarget.x;
+  const dy = ay - microTarget.y;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  if (dist < microTarget.size / 2 + 3) {
+    microTarget.triggered = true;
+    const reaction = Date.now() - microAppearTime;
+    microTimes.push(reaction);
+    microHits++;
+    document.getElementById('micro-hits').textContent = microHits;
+    const avg = Math.round(microTimes.reduce((a,b)=>a+b,0) / microTimes.length);
+    document.getElementById('micro-avg').textContent = avg + 'ms';
+    microTarget.el.classList.remove('active');
+    microTarget.el.classList.add('hit');
+    setTimeout(() => { if (test4Running) spawnMicroTarget(); }, 150);
+  }
+}
+
+function endTest4() {
+  test4Running = false;
+  const arena = document.getElementById('arena4');
+  const old = arena.querySelector('.target');
+  if (old) old.remove();
+  const avg = microTimes.length > 0 ? Math.round(microTimes.reduce((a,b)=>a+b,0) / microTimes.length) : 999;
+  const done = document.getElementById('done4');
+  done.style.display = 'flex';
+  document.getElementById('done4-text').textContent = `命中 ${microHits} 次 · 平均耗时 ${avg}ms`;
+  document.getElementById('btn-next4').style.display = 'inline-block';
+  window.test4Result = { hits: microHits, avg };
+  microTarget = null;
+}
+
 // ========== 灵敏度计算 ==========
 function calcAndShowResult() {
-  goPage(3);
+  goPage(5);
 
   const dpi = parseInt(surveyData.dpi) || 800;
   const pad = surveyData.pad;
   const grip = surveyData.grip;
-  const exp = surveyData.exp;
-  const pref = surveyData.pref;
+  const handsize = surveyData.handsize;
   const weapon = surveyData.weapon;
-  const hits = (window.test1Result || {}).hits || 5;
-  const avgMs = (window.test1Result || {}).avg || 500;
-  const trackPct = (window.test2Result || {}).trackPct || 40;
 
-  // 基础 eDPI 目标：通过习惯和测试结果决定
-  // 参考职业选手范围：200-400 eDPI
-  let baseEdpi = 280;
+  const t1 = window.test1Result || { hits: 6, avg: 500 };
+  const t2 = window.test2Result || { trackPct: 40 };
+  const t3 = window.test3Result || { hits: 6, overshoot: 60 };
+  const t4 = window.test4Result || { hits: 6, avg: 500 };
 
-  // DPI 影响（高DPI需要更低灵敏度）
-  if (dpi >= 1600) baseEdpi -= 40;
-  else if (dpi <= 400) baseEdpi += 30;
+  // ---- 第一步：物理硬约束（鼠标垫可用空间 + 手掌大小）决定 eDPI 的可行区间 ----
+  // 这两项不是"偏好"，是物理限制：垫子小、手小，天然逼近高灵敏一侧
+  let padFactor = 0;   // 正值 = 需要更低eDPI（更大移动空间）
+  if (pad === 'small') padFactor = -70;
+  else if (pad === 'medium') padFactor = 0;
+  else if (pad === 'large') padFactor = 50;
+  else if (pad === 'xl') padFactor = 90;
 
-  // 鼠标垫影响
-  if (pad === 'small') baseEdpi += 50;
-  else if (pad === 'large') baseEdpi -= 30;
-  else if (pad === 'xl') baseEdpi -= 60;
+  let handFactor = 0;
+  if (handsize === 'small') handFactor = -25;   // 手小，臂部大幅移动费力，倾向偏高一点eDPI
+  else if (handsize === 'large') handFactor = 20; // 手大，控制半径大，能承受更低eDPI
 
-  // 握持影响
-  if (grip === 'palm') baseEdpi -= 20;
-  else if (grip === 'fingertip') baseEdpi += 30;
+  // ---- 第二步：四项实测数据才是真正决定"你适合什么灵敏度"的核心 ----
+  // 甩枪测试：路径冗余越低 = 大幅度转向控制越好 = 能承受更低eDPI（不需要靠高灵敏"抢救"甩枪）
+  // 冗余越高 = 甩枪容易划过头/跟不上 = 需要更高eDPI辅助转向
+  const flickScore = (100 - t3.overshoot) / 100;  // 0~1，越接近1甩枪路径越干净
+  let flickFactor = (flickScore - 0.5) * -140; // 干净度高 → 负值 → 降低eDPI
 
-  // 经验影响
-  if (exp === 'new') baseEdpi += 20;
-  else if (exp === 'veteran') baseEdpi -= 10;
+  // 微调测试：平均耗时越短 = 小范围精确控制越强 = 可以用更低eDPI而不损失微操
+  // 耗时长 = 低灵敏下微操吃力 = 需要更高eDPI辅助
+  const microNorm = Math.max(0, Math.min(1, (600 - t4.avg) / 400)); // 200ms→1, 600ms→0
+  let microFactor = (microNorm - 0.5) * -80;
 
-  // 偏好
-  if (pref === 'low') baseEdpi -= 50;
-  else if (pref === 'high') baseEdpi += 60;
-  else if (pref === 'auto') {
-    // 用测试结果决定
-    if (avgMs < 350 && hits >= 10) baseEdpi -= 20; // 反应快，精度好，可以低一点
-    if (trackPct >= 60) baseEdpi -= 15; // 追踪好，不需要高灵敏
-  }
+  // 追踪测试：覆盖率高 = 手部持续控制稳，对eDPI不敏感，可低可高；覆盖率低 = 建议降低eDPI换稳定性
+  let trackFactor = 0;
+  if (t2.trackPct < 30) trackFactor = 45;   // 追踪差，用更高eDPI难度更大，实际应降低
+  else if (t2.trackPct < 45) trackFactor = 15;
+  else if (t2.trackPct >= 65) trackFactor = -15;
 
-  // 武器偏好
-  if (weapon === 'sniper') baseEdpi -= 30;
-  else if (weapon === 'duelist') baseEdpi += 20;
+  // 悬停反应：极快反应+高命中，说明整体神经反应快，可承受更低eDPI仍保持效率
+  let hoverFactor = 0;
+  if (t1.avg < 320 && t1.hits >= 11) hoverFactor = -20;
+  else if (t1.avg > 550 || t1.hits <= 5) hoverFactor = 25;
 
-  // 测试微调
-  if (hits >= 12) baseEdpi -= 10;
-  if (avgMs < 300) baseEdpi -= 10;
-  if (trackPct >= 65) baseEdpi -= 10;
-  if (trackPct < 30) baseEdpi += 20;
+  // ---- 武器倾向：小幅调整，不再是主导因素 ----
+  let weaponFactor = 0;
+  if (weapon === 'sniper') weaponFactor = -35;
+  else if (weapon === 'duelist') weaponFactor = 25;
 
-  // 限制在合理范围
-  baseEdpi = Math.max(150, Math.min(600, baseEdpi));
+  // 握持方式：小幅修正腕部/指尖控制风格
+  let gripFactor = 0;
+  if (grip === 'palm') gripFactor = -15;
+  else if (grip === 'fingertip') gripFactor = 20;
+  else if (grip === 'hybrid_pc') gripFactor = -5;
+  else if (grip === 'hybrid_cf') gripFactor = 10;
 
-  // 计算游戏内灵敏度
+  // ---- 汇总：基准280，叠加所有因子 ----
+  let baseEdpi = 280 + padFactor + handFactor + flickFactor + microFactor + trackFactor + hoverFactor + weaponFactor + gripFactor;
+  baseEdpi = Math.max(140, Math.min(650, Math.round(baseEdpi)));
+
   const sens = Math.round((baseEdpi / dpi) * 100) / 100;
-  const sensClamped = Math.max(0.1, Math.min(2.0, sens));
+  const sensClamped = Math.max(0.08, Math.min(3.0, sens));
 
-  // 360度距离 = 36000 / (sens * dpi * 0.0218750)
-  // Valorant 实际：sens*dpi * 角度比
-  // 简化公式：360cm = 36000 / (eDPI * 0.02188)
   const cm360 = (36000 / (baseEdpi * 0.5)).toFixed(1);
 
-  // 标签
   let tag = '均衡型';
-  if (baseEdpi <= 220) tag = '低灵敏 · 精准型';
-  else if (baseEdpi <= 320) tag = '均衡型';
-  else if (baseEdpi <= 450) tag = '中高灵敏';
-  else tag = '高灵敏 · 灵活型';
+  if (baseEdpi <= 200) tag = '低灵敏 · 精准型';
+  else if (baseEdpi <= 300) tag = '中低灵敏';
+  else if (baseEdpi <= 400) tag = '均衡型';
+  else if (baseEdpi <= 500) tag = '中高灵敏';
+  else tag = '高灵敏 · 甩枪型';
 
-  // 写入结果
   document.getElementById('result-sens').textContent = sensClamped.toFixed(2);
   document.getElementById('result-tag').textContent = tag;
   document.getElementById('r-dpi').textContent = dpi;
@@ -1036,14 +1305,13 @@ function calcAndShowResult() {
   document.getElementById('r-360').textContent = cm360 + ' cm';
   document.getElementById('r-sens-guide').textContent = sensClamped.toFixed(2);
 
-  // 分析行
   const rows = [
-    { key: '悬停测试命中数', val: `${hits} / 15秒`, cls: hits >= 10 ? 'good' : hits >= 6 ? 'warn' : '' },
-    { key: '平均反应时间', val: avgMs ? avgMs + 'ms' : '—', cls: avgMs < 350 ? 'good' : avgMs < 500 ? 'warn' : '' },
-    { key: '追踪覆盖率', val: trackPct + '%', cls: trackPct >= 55 ? 'good' : trackPct >= 35 ? 'warn' : '' },
-    { key: 'eDPI 区间', val: baseEdpi <= 250 ? '低 (职业主流)' : baseEdpi <= 380 ? '中 (均衡)' : '高 (灵活)', cls: baseEdpi <= 380 ? 'good' : 'warn' },
-    { key: '持鼠方式', val: grip === 'palm' ? 'Palm 掌握' : grip === 'claw' ? 'Claw 爪握' : 'Fingertip 指尖', cls: '' },
-    { key: '主要武器偏向', val: weapon === 'rifle' ? '步枪 (建议中低灵敏)' : weapon === 'sniper' ? '狙击 (建议低灵敏)' : weapon === 'duelist' ? '双持 (建议中高灵敏)' : '均衡', cls: '' },
+    { key: '悬停命中 / 反应', val: `${t1.hits}次 · ${t1.avg}ms`, cls: (t1.hits>=10 && t1.avg<400) ? 'good' : (t1.hits<=5||t1.avg>550) ? 'warn' : '' },
+    { key: '追踪覆盖率', val: t2.trackPct + '%', cls: t2.trackPct >= 55 ? 'good' : t2.trackPct >= 35 ? 'warn' : '' },
+    { key: '甩枪命中 / 路径冗余', val: `${t3.hits}次 · ${t3.overshoot}%`, cls: (t3.hits>=8 && t3.overshoot<40) ? 'good' : (t3.overshoot>70) ? 'warn' : '' },
+    { key: '微调命中 / 耗时', val: `${t4.hits}次 · ${t4.avg}ms`, cls: (t4.hits>=10 && t4.avg<350) ? 'good' : (t4.avg>550) ? 'warn' : '' },
+    { key: '鼠标垫空间约束', val: pad === 'small' ? '偏紧 (推高eDPI)' : pad === 'xl' ? '充裕 (可降eDPI)' : '正常', cls: '' },
+    { key: '最终 eDPI', val: baseEdpi, cls: 'good' },
   ];
 
   const container = document.getElementById('analysis-rows');
@@ -1074,32 +1342,43 @@ function adjustSens(delta) {
 }
 
 function resetAll() {
-  surveyData = { dpi: null, pad: null, grip: null, exp: null, pref: null, weapon: null };
+  surveyData = { dpi: null, pad: null, grip: null, handsize: null, weapon: null };
   window.test1Result = null;
   window.test2Result = null;
+  window.test3Result = null;
+  window.test4Result = null;
   hits = 0; hitTimes = [];
-  test1Running = false; test2Running = false;
+  flickHits = 0; flickOvershoots = [];
+  microHits = 0; microTimes = [];
+  test1Running = false; test2Running = false; test3Running = false; test4Running = false;
   clearInterval(timer1Interval); clearInterval(timer2Interval); clearInterval(trackInterval);
+  clearInterval(timer3Interval); clearInterval(timer4Interval);
 
-  // 重置UI
-  document.getElementById('ready1').style.display = '';
-  document.getElementById('done1').style.display = 'none';
-  document.getElementById('btn-next1').style.display = 'none';
-  document.getElementById('timer1-bar').style.width = '100%';
-  document.getElementById('timer1-display').textContent = '15';
+  const resets = [
+    ['ready1','done1','btn-next1','timer1-bar','timer1-display'],
+    ['ready2','done2','btn-next2','timer2-bar','timer2-display'],
+    ['ready3','done3','btn-next3','timer3-bar','timer3-display'],
+    ['ready4','done4','btn-next4','timer4-bar','timer4-display'],
+  ];
+  resets.forEach(([ready, done, btn, bar, disp]) => {
+    document.getElementById(ready).style.display = '';
+    document.getElementById(done).style.display = 'none';
+    document.getElementById(btn).style.display = 'none';
+    document.getElementById(bar).style.width = '100%';
+    document.getElementById(disp).textContent = '15';
+  });
   document.getElementById('hits-count').textContent = '0';
   document.getElementById('avg-time').textContent = '—';
+  document.getElementById('flick-hits').textContent = '0';
+  document.getElementById('flick-overshoot').textContent = '—';
+  document.getElementById('micro-hits').textContent = '0';
+  document.getElementById('micro-avg').textContent = '—';
 
-  document.getElementById('ready2').style.display = '';
-  document.getElementById('done2').style.display = 'none';
-  document.getElementById('btn-next2').style.display = 'none';
-  document.getElementById('timer2-bar').style.width = '100%';
-  document.getElementById('timer2-display').textContent = '15';
+  ['arena1','arena2','arena3','arena4'].forEach(id => {
+    document.getElementById(id).querySelectorAll('.target, .track-target').forEach(t => t.remove());
+  });
 
-  const arena1 = document.getElementById('arena1');
-  arena1.querySelectorAll('.target').forEach(t => t.remove());
-  const arena2 = document.getElementById('arena2');
-  arena2.querySelectorAll('.track-target').forEach(t => t.remove());
+  currentTarget = null; flickTarget = null; microTarget = null; trackEl = null;
 
   document.querySelectorAll('.q-btn').forEach(b => b.classList.remove('selected'));
   document.querySelectorAll('.step-tab').forEach(t => { t.classList.remove('done','active'); });
