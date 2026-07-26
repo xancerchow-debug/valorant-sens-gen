@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VALORANT 灵敏度生成器</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap');
+
+  :root {
+    --red: #FF4655;
+    --red-dim: #992030;
+    --bg: #0F1014;
+    --bg2: #16181E;
+    --bg3: #1E2028;
+    --border: #2A2D38;
+    --text: #ECE8E1;
+    --text-dim: #7A7A8C;
+    --green: #4CAF8A;
+    --yellow: #F5A623;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* 自定义准星 */
+  #crosshair {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+  }
+  #crosshair svg { display: block; }
+
+  /* 顶部栏 */
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 40px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg2);
+  }
+  .header .logo {
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--red);
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .header .sep { color: var(--border); font-size: 20px; }
+
+  /* 步骤导航 */
+  .steps-nav {
+    display: flex;
+    gap: 0;
+    padding: 0 40px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+  }
+  .step-tab {
+    padding: 14px 28px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    border-bottom: 2px solid transparent;
+    cursor: default;
+    transition: all 0.2s;
+    font-weight: 600;
+  }
+  .step-tab.active {
+    color: var(--red);
+    border-bottom-color: var(--red);
+  }
+  .step-tab.done {
+    color: var(--green);
+    border-bottom-color: var(--green);
+  }
+
+  /* 主内容区 */
+  .main { max-width: 900px; margin: 0 auto; padding: 40px; }
+
+  /* 页面切换 */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* 标题 */
+  .page-title {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .page-title span { color: var(--red); }
+  .page-sub {
+    font-size: 13px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    margin-bottom: 36px;
+  }
+
+  /* 问卷 */
+  .q-group { margin-bottom: 28px; }
+  .q-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+  .q-options { display: flex; gap: 10px; flex-wrap: wrap; }
+  .q-btn {
+    padding: 10px 20px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: none;
+    transition: all 0.15s;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+  }
+  .q-btn:hover { border-color: var(--red); color: var(--text); background: var(--bg2); }
+  .q-btn.selected { background: var(--red); border-color: var(--red); color: white; }
+
+  .q-input {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    padding: 10px 16px;
+    width: 200px;
+    outline: none;
+    cursor: none;
+  }
+  .q-input:focus { border-color: var(--red); }
+
+  /* 按钮 */
+  .btn-primary {
+    display: inline-block;
+    padding: 14px 40px;
+    background: var(--red);
+    color: white;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    border: none;
+    cursor: none;
+    clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+    transition: all 0.15s;
+    margin-top: 20px;
+  }
+  .btn-primary:hover { background: #FF6B77; }
+  .btn-secondary {
+    display: inline-block;
+    padding: 14px 40px;
+    background: transparent;
+    color: var(--text-dim);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    cursor: none;
+    clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+    transition: all 0.15s;
+    margin-top: 20px;
+    margin-left: 12px;
+  }
+  .btn-secondary:hover { border-color: var(--text-dim); color: var(--text); }
+
+  /* AimLab 测试区 */
+  .test-arena {
+    position: relative;
+    width: 100%;
+    height: 440px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin: 20px 0;
+  }
+  .test-arena::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, #1a1d25 0%, #0f1014 100%);
+  }
+
+  /* 测试目标 */
+  .target {
+    position: absolute;
+    border-radius: 50%;
+    border: 2px solid var(--red);
+    transform: translate(-50%, -50%);
+    transition: opacity 0.1s;
+    z-index: 2;
+    pointer-events: none;
+  }
+  .target::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 4px; height: 4px;
+    background: var(--red);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .target.active { border-color: var(--red); box-shadow: 0 0 12px var(--red), 0 0 24px rgba(255,70,85,0.3); }
+  .target.hit { border-color: var(--green); box-shadow: 0 0 12px var(--green); opacity: 0; }
+
+  /* 网格背景 */
+  .arena-grid {
+    position: absolute;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(255,70,85,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,70,85,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* HUD */
+  .arena-hud {
+    position: absolute;
+    top: 16px; left: 16px; right: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    z-index: 10;
+    pointer-events: none;
+  }
+  .hud-stat {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+  }
+  .hud-stat .val {
+    font-size: 24px;
+    color: var(--text);
+    display: block;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .hud-stat .val.red { color: var(--red); }
+  .hud-stat .val.green { color: var(--green); }
+
+  /* 倒计时进度条 */
+  .timer-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--border);
+    z-index: 10;
+  }
+  .timer-bar-fill {
+    height: 100%;
+    background: var(--red);
+    transition: width 0.05s linear;
+  }
+
+  /* 测试说明 */
+  .test-instruction {
+    font-size: 13px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    line-height: 1.6;
+  }
+
+  /* 追踪测试 */
+  .track-target {
+    position: absolute;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--yellow);
+    background: rgba(245, 166, 35, 0.1);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 2;
+  }
+  .track-target::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 6px; height: 6px;
+    background: var(--yellow);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  /* 分隔线 */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 32px 0;
+    position: relative;
+  }
+  .divider::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--bg);
+    padding: 0 16px;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  /* 结果页 */
+  .result-box {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 32px;
+    margin-bottom: 20px;
+    position: relative;
+    clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+  }
+  .result-box::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 20px; left: 0; bottom: 20px;
+    border: 1px solid var(--red);
+    clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+    pointer-events: none;
+    opacity: 0.3;
+  }
+
+  .sens-display {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 64px;
+    color: var(--red);
+    font-weight: 700;
+    letter-spacing: 2px;
+    line-height: 1;
+    margin: 16px 0 8px;
+  }
+  .sens-label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .sens-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .sens-item {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 16px;
+  }
+  .sens-item .label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .sens-item .value {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 20px;
+    color: var(--text);
+  }
+
+  .analysis-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .analysis-row:last-child { border-bottom: none; }
+  .analysis-row .key { color: var(--text-dim); letter-spacing: 1px; }
+  .analysis-row .val { font-family: 'Share Tech Mono', monospace; color: var(--text); }
+  .analysis-row .val.good { color: var(--green); }
+  .analysis-row .val.warn { color: var(--yellow); }
+
+  /* 准备屏幕 */
+  .ready-screen {
+    position: absolute;
+    inset: 0;
+    background: rgba(15,16,20,0.92);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+  }
+  .ready-screen h2 {
+    font-size: 22px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .ready-screen p {
+    font-size: 13px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    text-align: center;
+    max-width: 340px;
+    line-height: 1.7;
+  }
+  .ready-btn {
+    margin-top: 24px;
+    padding: 12px 32px;
+    background: var(--red);
+    color: white;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    border: none;
+    cursor: none;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+  }
+
+  .score-bar-wrap { margin-top: 8px; }
+  .score-bar-bg { background: var(--bg2); height: 6px; border-radius: 0; margin-top: 4px; }
+  .score-bar-fill { height: 100%; background: var(--red); transition: width 0.6s ease; }
+
+  /* 测试完成提示 */
+  .test-done-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(15,16,20,0.88);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    display: none;
+  }
+  .test-done-overlay h3 { font-size: 18px; letter-spacing: 3px; color: var(--green); margin-bottom: 8px; }
+  .test-done-overlay p { font-size: 13px; color: var(--text-dim); }
+
+  .tag {
+    display: inline-block;
+    padding: 3px 10px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border: 1px solid var(--red);
+    color: var(--red);
+    margin-right: 6px;
+  }
+
+  .info-box {
+    background: rgba(255,70,85,0.06);
+    border: 1px solid rgba(255,70,85,0.2);
+    border-left: 3px solid var(--red);
+    padding: 14px 18px;
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+
+  .copy-btn {
+    display: inline-block;
+    padding: 8px 20px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    cursor: none;
+    margin-left: 12px;
+    transition: all 0.15s;
+  }
+  .copy-btn:hover { border-color: var(--red); color: var(--red); }
+</style>
+</head>
+<body>
+
+<!-- 自定义准星 -->
+<div id="crosshair">
+  <svg width="24" height="24" viewBox="0 0 24 24">
+    <line x1="12" y1="2" x2="12" y2="8" stroke="#FF4655" stroke-width="1.5"/>
+    <line x1="12" y1="16" x2="12" y2="22" stroke="#FF4655" stroke-width="1.5"/>
+    <line x1="2" y1="12" x2="8" y2="12" stroke="#FF4655" stroke-width="1.5"/>
+    <line x1="16" y1="12" x2="22" y2="12" stroke="#FF4655" stroke-width="1.5"/>
+    <rect x="10.5" y="10.5" width="3" height="3" fill="none" stroke="#FF4655" stroke-width="1"/>
+  </svg>
+</div>
+
+<!-- 顶部 -->
+<div class="header">
+  <div class="logo">VALORANT</div>
+  <div class="sep">/</div>
+  <h1>灵敏度 <span style="color:var(--red)">生成器</span></h1>
+</div>
+
+<!-- 步骤导航 -->
+<div class="steps-nav">
+  <div class="step-tab active" id="tab-0">01 · 个人习惯</div>
+  <div class="step-tab" id="tab-1">02 · 悬停测试</div>
+  <div class="step-tab" id="tab-2">03 · 追踪测试</div>
+  <div class="step-tab" id="tab-3">04 · 灵敏度结果</div>
+</div>
+
+<div class="main">
+
+  <!-- PAGE 0: 问卷 -->
+  <div class="page active" id="page-0">
+    <div class="page-title">个人 <span>习惯</span> 设置</div>
+    <div class="page-sub">根据你的实际使用习惯填写，结果会更准确</div>
+
+    <div class="info-box">
+      所有选项都会影响最终灵敏度计算。<br>
+      如果不确定某项，保持默认即可。
+    </div>
+
+    <div class="q-group">
+      <div class="q-label">鼠标 DPI</div>
+      <div class="q-options" id="q-dpi">
+        <button class="q-btn" data-val="400">400</button>
+        <button class="q-btn" data-val="800">800</button>
+        <button class="q-btn" data-val="1000">1000</button>
+        <button class="q-btn" data-val="1200">1200</button>
+        <button class="q-btn" data-val="1600">1600</button>
+        <button class="q-btn" data-val="3200">3200</button>
+      </div>
+    </div>
+
+    <div class="q-group">
+      <div class="q-label">鼠标垫尺寸</div>
+      <div class="q-options" id="q-pad">
+        <button class="q-btn" data-val="small">小垫 (&lt;300mm)</button>
+        <button class="q-btn" data-val="medium">中垫 (300-450mm)</button>
+        <button class="q-btn" data-val="large">大垫 (450-600mm)</button>
+        <button class="q-btn" data-val="xl">超大垫 (&gt;600mm)</button>
+      </div>
+    </div>
+
+    <div class="q-group">
+      <div class="q-label">主要持鼠方式</div>
+      <div class="q-options" id="q-grip">
+        <button class="q-btn" data-val="palm">掌握 Palm</button>
+        <button class="q-btn" data-val="claw">爪握 Claw</button>
+        <button class="q-btn" data-val="fingertip">指尖 Fingertip</button>
+      </div>
+    </div>
+
+    <div class="q-group">
+      <div class="q-label">游戏经验</div>
+      <div class="q-options" id="q-exp">
+        <button class="q-btn" data-val="new">新手 &lt;100h</button>
+        <button class="q-btn" data-val="casual">休闲 100-500h</button>
+        <button class="q-btn" data-val="regular">熟练 500-1500h</button>
+        <button class="q-btn" data-val="veteran">老手 &gt;1500h</button>
+      </div>
+    </div>
+
+    <div class="q-group">
+      <div class="q-label">偏好的感觉</div>
+      <div class="q-options" id="q-pref">
+        <button class="q-btn" data-val="low">低灵敏 · 稳定精确</button>
+        <button class="q-btn" data-val="mid">中灵敏 · 均衡</button>
+        <button class="q-btn" data-val="high">高灵敏 · 灵活</button>
+        <button class="q-btn" data-val="auto">根据测试自动决定</button>
+      </div>
+    </div>
+
+    <div class="q-group">
+      <div class="q-label">主要武器类型</div>
+      <div class="q-options" id="q-weapon">
+        <button class="q-btn" data-val="rifle">步枪 / Vandal / Phantom</button>
+        <button class="q-btn" data-val="sniper">狙击 / Operator</button>
+        <button class="q-btn" data-val="duelist">双持 / 手枪流</button>
+        <button class="q-btn" data-val="mixed">均衡</button>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="goToTest1()">开始测试 →</button>
+  </div>
+
+  <!-- PAGE 1: 悬停测试 -->
+  <div class="page" id="page-1">
+    <div class="page-title">悬停 <span>精度</span> 测试</div>
+    <div class="page-sub">将准星悬停在目标上触发命中 · 无需点击 · 共15个目标</div>
+    <div class="test-instruction">
+      目标会随机出现，移动准星覆盖圆心即触发。<br>
+      测试你的<strong style="color:var(--text)">瞄准精度</strong>和<strong style="color:var(--text)">反应速度</strong>，用于判断合适的灵敏度区间。
+    </div>
+
+    <div class="test-arena" id="arena1">
+      <div class="arena-grid"></div>
+      <div class="arena-hud">
+        <div class="hud-stat">HITS<span class="val green" id="hits-count">0</span></div>
+        <div class="hud-stat" style="text-align:center">TIME<span class="val red" id="timer1-display">15</span></div>
+        <div class="hud-stat" style="text-align:right">AVG TIME<span class="val" id="avg-time">—</span></div>
+      </div>
+      <div class="timer-bar"><div class="timer-bar-fill" id="timer1-bar" style="width:100%"></div></div>
+
+      <div class="ready-screen" id="ready1">
+        <h2>准备好了吗？</h2>
+        <p>将准星移动到目标上即可命中，无需点击。<br>15秒内尽量命中更多目标。</p>
+        <button class="ready-btn" onclick="startTest1()">开始测试</button>
+      </div>
+      <div class="test-done-overlay" id="done1">
+        <h3>✓ 测试完成</h3>
+        <p id="done1-text"></p>
+      </div>
+    </div>
+
+    <button class="btn-secondary" onclick="goPage(0)">← 返回</button>
+    <button class="btn-primary" id="btn-next1" onclick="goToTest2()" style="display:none">下一项测试 →</button>
+  </div>
+
+  <!-- PAGE 2: 追踪测试 -->
+  <div class="page" id="page-2">
+    <div class="page-title">追踪 <span>稳定性</span> 测试</div>
+    <div class="page-sub">跟随移动目标 · 保持准星贴合目标 · 持续15秒</div>
+    <div class="test-instruction">
+      目标会在场地内移动，尽量让你的准星持续覆盖目标。<br>
+      测试你的<strong style="color:var(--text)">手腕稳定性</strong>，用于调整追踪相关的灵敏度。
+    </div>
+
+    <div class="test-arena" id="arena2">
+      <div class="arena-grid"></div>
+      <div class="arena-hud">
+        <div class="hud-stat">覆盖率<span class="val green" id="track-score">0%</span></div>
+        <div class="hud-stat" style="text-align:center">TIME<span class="val red" id="timer2-display">15</span></div>
+        <div class="hud-stat" style="text-align:right">稳定性<span class="val" id="stability-val">—</span></div>
+      </div>
+      <div class="timer-bar"><div class="timer-bar-fill" id="timer2-bar" style="width:100%"></div></div>
+
+      <div class="ready-screen" id="ready2">
+        <h2>追踪测试</h2>
+        <p>黄色圆圈会在区域内移动，让你的准星尽量覆盖它的中心点。<br>测试持续15秒。</p>
+        <button class="ready-btn" onclick="startTest2()">开始测试</button>
+      </div>
+      <div class="test-done-overlay" id="done2">
+        <h3>✓ 追踪完成</h3>
+        <p id="done2-text"></p>
+      </div>
+    </div>
+
+    <button class="btn-secondary" onclick="goPage(1)">← 返回</button>
+    <button class="btn-primary" id="btn-next2" onclick="calcAndShowResult()" style="display:none">生成灵敏度 →</button>
+  </div>
+
+  <!-- PAGE 3: 结果 -->
+  <div class="page" id="page-3">
+    <div class="page-title">你的 <span>专属</span> 灵敏度</div>
+    <div class="page-sub">基于测试结果 + 个人习惯综合计算</div>
+
+    <div class="result-box">
+      <div class="sens-label">VALORANT 游戏内灵敏度</div>
+      <div class="sens-display" id="result-sens">0.30</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+        <span class="tag" id="result-tag">均衡型</span>
+        <button class="copy-btn" onclick="copySens()">复制数值</button>
+      </div>
+
+      <div class="divider" data-label="详细参数" style="margin:24px 0 16px;"></div>
+
+      <div class="sens-grid">
+        <div class="sens-item">
+          <div class="label">DPI</div>
+          <div class="value" id="r-dpi">800</div>
+        </div>
+        <div class="sens-item">
+          <div class="label">eDPI (有效灵敏度)</div>
+          <div class="value" id="r-edpi">240</div>
+        </div>
+        <div class="sens-item">
+          <div class="label">360° 移动距离</div>
+          <div class="value" id="r-360">42.3 cm</div>
+        </div>
+        <div class="sens-item">
+          <div class="label">适用分辨率</div>
+          <div class="value">1920×1080</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-box">
+      <div class="sens-label" style="margin-bottom:16px;">测试分析</div>
+      <div id="analysis-rows"></div>
+    </div>
+
+    <div class="result-box">
+      <div class="sens-label" style="margin-bottom:12px;">如何在游戏中使用</div>
+      <div class="info-box" style="margin-bottom:0">
+        <strong style="color:var(--text)">设置路径：</strong>设置 → 通用 → 鼠标 → 灵敏度<br>
+        <strong style="color:var(--text)">输入数值：</strong><span id="r-sens-guide">0.30</span><br>
+        <strong style="color:var(--text)">ADS 灵敏度：</strong>建议保持 1.0（相对比例）<br>
+        <strong style="color:var(--text)">适应期：</strong>至少打 3-5 局后再评价感受，前期会不适应是正常的
+      </div>
+    </div>
+
+    <div style="margin-top:8px;">
+      <button class="btn-primary" onclick="resetAll()">重新测试</button>
+      <button class="btn-secondary" onclick="adjustSens(-0.05)">降低 -0.05</button>
+      <button class="btn-secondary" onclick="adjustSens(0.05)">提高 +0.05</button>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+// ========== 全局状态 ==========
+let mouseX = 0, mouseY = 0;
+let surveyData = { dpi: null, pad: null, grip: null, exp: null, pref: null, weapon: null };
+
+// 准星跟随
+document.addEventListener('mousemove', (e) => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+  const ch = document.getElementById('crosshair');
+  ch.style.left = mouseX + 'px';
+  ch.style.top = mouseY + 'px';
+});
+
+// ========== 问卷选择 ==========
+document.querySelectorAll('.q-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const group = this.closest('.q-options');
+    group.querySelectorAll('.q-btn').forEach(b => b.classList.remove('selected'));
+    this.classList.add('selected');
+    const key = group.id.replace('q-', '');
+    surveyData[key] = this.dataset.val;
+  });
+});
+
+function goPage(n) {
+  document.querySelectorAll('.page').forEach((p, i) => {
+    p.classList.toggle('active', i === n);
+  });
+  document.querySelectorAll('.step-tab').forEach((t, i) => {
+    t.classList.remove('active');
+    if (i < n) t.classList.add('done');
+    else if (i === n) t.classList.add('active');
+    else t.classList.remove('done');
+  });
+}
+
+function goToTest1() {
+  if (!surveyData.dpi || !surveyData.pad || !surveyData.grip || !surveyData.exp || !surveyData.pref || !surveyData.weapon) {
+    alert('请完成所有选项后继续');
+    return;
+  }
+  goPage(1);
+}
+
+// ========== 测试1：悬停测试 ==========
+let test1Running = false;
+let hits = 0;
+let hitTimes = [];
+let lastHitTime = 0;
+let timer1Interval = null;
+let timer1Remaining = 15;
+let currentTarget = null;
+let targetAppearTime = 0;
+
+function startTest1() {
+  document.getElementById('ready1').style.display = 'none';
+  test1Running = true;
+  hits = 0;
+  hitTimes = [];
+  timer1Remaining = 15;
+  document.getElementById('hits-count').textContent = '0';
+  document.getElementById('avg-time').textContent = '—';
+
+  spawnTarget1();
+
+  const startMs = Date.now();
+  timer1Interval = setInterval(() => {
+    const elapsed = (Date.now() - startMs) / 1000;
+    timer1Remaining = Math.max(0, 15 - elapsed);
+    document.getElementById('timer1-display').textContent = Math.ceil(timer1Remaining);
+    document.getElementById('timer1-bar').style.width = (timer1Remaining / 15 * 100) + '%';
+    if (timer1Remaining <= 0) {
+      clearInterval(timer1Interval);
+      endTest1();
+    }
+  }, 50);
+}
+
+function spawnTarget1() {
+  if (!test1Running) return;
+  const arena = document.getElementById('arena1');
+  const old = arena.querySelector('.target');
+  if (old) old.remove();
+
+  const size = 36 + Math.random() * 28;
+  const pad = 60;
+  const x = pad + Math.random() * (arena.clientWidth - pad * 2);
+  const y = pad + Math.random() * (arena.clientHeight - pad * 2);
+
+  const t = document.createElement('div');
+  t.className = 'target active';
+  t.style.cssText = `left:${x}px;top:${y}px;width:${size}px;height:${size}px`;
+  arena.appendChild(t);
+  currentTarget = { el: t, x, y, size, triggered: false };
+  targetAppearTime = Date.now();
+}
+
+// 检测悬停
+document.addEventListener('mousemove', checkHover1);
+function checkHover1() {
+  if (!test1Running || !currentTarget || currentTarget.triggered) return;
+  const arena = document.getElementById('arena1');
+  const rect = arena.getBoundingClientRect();
+  const ax = mouseX - rect.left;
+  const ay = mouseY - rect.top;
+  const dx = ax - currentTarget.x;
+  const dy = ay - currentTarget.y;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  if (dist < currentTarget.size / 2) {
+    currentTarget.triggered = true;
+    const reaction = Date.now() - targetAppearTime;
+    hitTimes.push(reaction);
+    hits++;
+    document.getElementById('hits-count').textContent = hits;
+    const avg = Math.round(hitTimes.reduce((a, b) => a + b, 0) / hitTimes.length);
+    document.getElementById('avg-time').textContent = avg + 'ms';
+    currentTarget.el.classList.remove('active');
+    currentTarget.el.classList.add('hit');
+    setTimeout(() => { if (test1Running) spawnTarget1(); }, 200);
+  }
+}
+
+function endTest1() {
+  test1Running = false;
+  const arena = document.getElementById('arena1');
+  const old = arena.querySelector('.target');
+  if (old) old.remove();
+  const avg = hitTimes.length > 0 ? Math.round(hitTimes.reduce((a, b) => a + b, 0) / hitTimes.length) : 999;
+  const done = document.getElementById('done1');
+  done.style.display = 'flex';
+  document.getElementById('done1-text').textContent = `命中 ${hits} 个 · 平均反应 ${avg}ms`;
+  document.getElementById('btn-next1').style.display = 'inline-block';
+  window.test1Result = { hits, avg };
+}
+
+function goToTest2() {
+  goPage(2);
+}
+
+// ========== 测试2：追踪测试 ==========
+let test2Running = false;
+let trackInterval = null;
+let timer2Interval = null;
+let timer2Remaining = 15;
+let trackSamples = 0;
+let trackHits = 0;
+let trackX = 0, trackY = 0;
+let trackVX = 2.5, trackVY = 1.8;
+let trackEl = null;
+
+function startTest2() {
+  document.getElementById('ready2').style.display = 'none';
+  test2Running = true;
+  trackSamples = 0;
+  trackHits = 0;
+  timer2Remaining = 15;
+
+  const arena = document.getElementById('arena2');
+  trackX = arena.clientWidth / 2;
+  trackY = arena.clientHeight / 2;
+  trackVX = (Math.random() > 0.5 ? 1 : -1) * (2 + Math.random() * 2);
+  trackVY = (Math.random() > 0.5 ? 1 : -1) * (1.5 + Math.random() * 2);
+
+  trackEl = document.createElement('div');
+  trackEl.className = 'track-target';
+  arena.appendChild(trackEl);
+  trackEl.style.left = trackX + 'px';
+  trackEl.style.top = trackY + 'px';
+
+  const startMs = Date.now();
+
+  // 移动靶 + 采样
+  trackInterval = setInterval(() => {
+    const arena = document.getElementById('arena2');
+    const pad = 30;
+    trackX += trackVX;
+    trackY += trackVY;
+    if (trackX < pad || trackX > arena.clientWidth - pad) trackVX *= -1;
+    if (trackY < pad || trackY > arena.clientHeight - pad) trackVY *= -1;
+    trackEl.style.left = trackX + 'px';
+    trackEl.style.top = trackY + 'px';
+
+    // 采样
+    const rect = arena.getBoundingClientRect();
+    const ax = mouseX - rect.left;
+    const ay = mouseY - rect.top;
+    const dx = ax - trackX;
+    const dy = ay - trackY;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    trackSamples++;
+    if (dist < 20) trackHits++;
+
+    const pct = Math.round(trackHits / trackSamples * 100);
+    document.getElementById('track-score').textContent = pct + '%';
+    const stability = pct >= 60 ? '优秀' : pct >= 40 ? '良好' : '待提升';
+    document.getElementById('stability-val').textContent = stability;
+  }, 16);
+
+  // 倒计时
+  timer2Interval = setInterval(() => {
+    const elapsed = (Date.now() - startMs) / 1000;
+    timer2Remaining = Math.max(0, 15 - elapsed);
+    document.getElementById('timer2-display').textContent = Math.ceil(timer2Remaining);
+    document.getElementById('timer2-bar').style.width = (timer2Remaining / 15 * 100) + '%';
+    if (timer2Remaining <= 0) {
+      clearInterval(timer2Interval);
+      clearInterval(trackInterval);
+      endTest2();
+    }
+  }, 50);
+}
+
+function endTest2() {
+  test2Running = false;
+  if (trackEl) trackEl.remove();
+  const pct = trackSamples > 0 ? Math.round(trackHits / trackSamples * 100) : 0;
+  const done = document.getElementById('done2');
+  done.style.display = 'flex';
+  document.getElementById('done2-text').textContent = `追踪覆盖率 ${pct}%`;
+  document.getElementById('btn-next2').style.display = 'inline-block';
+  window.test2Result = { trackPct: pct };
+}
+
+// ========== 灵敏度计算 ==========
+function calcAndShowResult() {
+  goPage(3);
+
+  const dpi = parseInt(surveyData.dpi) || 800;
+  const pad = surveyData.pad;
+  const grip = surveyData.grip;
+  const exp = surveyData.exp;
+  const pref = surveyData.pref;
+  const weapon = surveyData.weapon;
+  const hits = (window.test1Result || {}).hits || 5;
+  const avgMs = (window.test1Result || {}).avg || 500;
+  const trackPct = (window.test2Result || {}).trackPct || 40;
+
+  // 基础 eDPI 目标：通过习惯和测试结果决定
+  // 参考职业选手范围：200-400 eDPI
+  let baseEdpi = 280;
+
+  // DPI 影响（高DPI需要更低灵敏度）
+  if (dpi >= 1600) baseEdpi -= 40;
+  else if (dpi <= 400) baseEdpi += 30;
+
+  // 鼠标垫影响
+  if (pad === 'small') baseEdpi += 50;
+  else if (pad === 'large') baseEdpi -= 30;
+  else if (pad === 'xl') baseEdpi -= 60;
+
+  // 握持影响
+  if (grip === 'palm') baseEdpi -= 20;
+  else if (grip === 'fingertip') baseEdpi += 30;
+
+  // 经验影响
+  if (exp === 'new') baseEdpi += 20;
+  else if (exp === 'veteran') baseEdpi -= 10;
+
+  // 偏好
+  if (pref === 'low') baseEdpi -= 50;
+  else if (pref === 'high') baseEdpi += 60;
+  else if (pref === 'auto') {
+    // 用测试结果决定
+    if (avgMs < 350 && hits >= 10) baseEdpi -= 20; // 反应快，精度好，可以低一点
+    if (trackPct >= 60) baseEdpi -= 15; // 追踪好，不需要高灵敏
+  }
+
+  // 武器偏好
+  if (weapon === 'sniper') baseEdpi -= 30;
+  else if (weapon === 'duelist') baseEdpi += 20;
+
+  // 测试微调
+  if (hits >= 12) baseEdpi -= 10;
+  if (avgMs < 300) baseEdpi -= 10;
+  if (trackPct >= 65) baseEdpi -= 10;
+  if (trackPct < 30) baseEdpi += 20;
+
+  // 限制在合理范围
+  baseEdpi = Math.max(150, Math.min(600, baseEdpi));
+
+  // 计算游戏内灵敏度
+  const sens = Math.round((baseEdpi / dpi) * 100) / 100;
+  const sensClamped = Math.max(0.1, Math.min(2.0, sens));
+
+  // 360度距离 = 36000 / (sens * dpi * 0.0218750)
+  // Valorant 实际：sens*dpi * 角度比
+  // 简化公式：360cm = 36000 / (eDPI * 0.02188)
+  const cm360 = (36000 / (baseEdpi * 0.5)).toFixed(1);
+
+  // 标签
+  let tag = '均衡型';
+  if (baseEdpi <= 220) tag = '低灵敏 · 精准型';
+  else if (baseEdpi <= 320) tag = '均衡型';
+  else if (baseEdpi <= 450) tag = '中高灵敏';
+  else tag = '高灵敏 · 灵活型';
+
+  // 写入结果
+  document.getElementById('result-sens').textContent = sensClamped.toFixed(2);
+  document.getElementById('result-tag').textContent = tag;
+  document.getElementById('r-dpi').textContent = dpi;
+  document.getElementById('r-edpi').textContent = baseEdpi;
+  document.getElementById('r-360').textContent = cm360 + ' cm';
+  document.getElementById('r-sens-guide').textContent = sensClamped.toFixed(2);
+
+  // 分析行
+  const rows = [
+    { key: '悬停测试命中数', val: `${hits} / 15秒`, cls: hits >= 10 ? 'good' : hits >= 6 ? 'warn' : '' },
+    { key: '平均反应时间', val: avgMs ? avgMs + 'ms' : '—', cls: avgMs < 350 ? 'good' : avgMs < 500 ? 'warn' : '' },
+    { key: '追踪覆盖率', val: trackPct + '%', cls: trackPct >= 55 ? 'good' : trackPct >= 35 ? 'warn' : '' },
+    { key: 'eDPI 区间', val: baseEdpi <= 250 ? '低 (职业主流)' : baseEdpi <= 380 ? '中 (均衡)' : '高 (灵活)', cls: baseEdpi <= 380 ? 'good' : 'warn' },
+    { key: '持鼠方式', val: grip === 'palm' ? 'Palm 掌握' : grip === 'claw' ? 'Claw 爪握' : 'Fingertip 指尖', cls: '' },
+    { key: '主要武器偏向', val: weapon === 'rifle' ? '步枪 (建议中低灵敏)' : weapon === 'sniper' ? '狙击 (建议低灵敏)' : weapon === 'duelist' ? '双持 (建议中高灵敏)' : '均衡', cls: '' },
+  ];
+
+  const container = document.getElementById('analysis-rows');
+  container.innerHTML = '';
+  rows.forEach(r => {
+    container.innerHTML += `<div class="analysis-row"><span class="key">${r.key}</span><span class="val ${r.cls}">${r.val}</span></div>`;
+  });
+
+  window.currentSens = sensClamped;
+}
+
+function copySens() {
+  const val = document.getElementById('result-sens').textContent;
+  navigator.clipboard.writeText(val).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = '✓ 已复制';
+    setTimeout(() => btn.textContent = '复制数值', 1500);
+  });
+}
+
+function adjustSens(delta) {
+  window.currentSens = Math.max(0.1, Math.min(2.0, (window.currentSens || 0.3) + delta));
+  const s = window.currentSens.toFixed(2);
+  document.getElementById('result-sens').textContent = s;
+  document.getElementById('r-sens-guide').textContent = s;
+  const dpi = parseInt(surveyData.dpi) || 800;
+  document.getElementById('r-edpi').textContent = Math.round(window.currentSens * dpi);
+}
+
+function resetAll() {
+  surveyData = { dpi: null, pad: null, grip: null, exp: null, pref: null, weapon: null };
+  window.test1Result = null;
+  window.test2Result = null;
+  hits = 0; hitTimes = [];
+  test1Running = false; test2Running = false;
+  clearInterval(timer1Interval); clearInterval(timer2Interval); clearInterval(trackInterval);
+
+  // 重置UI
+  document.getElementById('ready1').style.display = '';
+  document.getElementById('done1').style.display = 'none';
+  document.getElementById('btn-next1').style.display = 'none';
+  document.getElementById('timer1-bar').style.width = '100%';
+  document.getElementById('timer1-display').textContent = '15';
+  document.getElementById('hits-count').textContent = '0';
+  document.getElementById('avg-time').textContent = '—';
+
+  document.getElementById('ready2').style.display = '';
+  document.getElementById('done2').style.display = 'none';
+  document.getElementById('btn-next2').style.display = 'none';
+  document.getElementById('timer2-bar').style.width = '100%';
+  document.getElementById('timer2-display').textContent = '15';
+
+  const arena1 = document.getElementById('arena1');
+  arena1.querySelectorAll('.target').forEach(t => t.remove());
+  const arena2 = document.getElementById('arena2');
+  arena2.querySelectorAll('.track-target').forEach(t => t.remove());
+
+  document.querySelectorAll('.q-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('.step-tab').forEach(t => { t.classList.remove('done','active'); });
+
+  goPage(0);
+}
+</script>
+</body>
+</html>
